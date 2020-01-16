@@ -32,27 +32,20 @@ router.post('/', validateUser, (req, res) => {
 });
 
 // POST create a new post under a user
-router.post('/:id/posts',validateUserId, validatePost, (req, res) => {
-  // do your magic!
-  const post = req.body
-  // if(!post){
-  //   res.status(400).json({error: "Please provide post."})
-  // }
-  postDb
-  .insert(post)
-  .then(post => {
-      res.status(201).json(post)
-    })
-    .catch(error => {
-      // log error to database
-      console.log(error);
-      res.status(500).json({
-        message: "Error adding the user"
-      });
-  });
-
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  const id = req.params.id;
+  req.body.user_id = id;
+  const postData = req.body;
+          postDb.insert(postData)    
+          .then(post => {
+              res.status(201).json(post);
+          })
+          .catch(error => {
+              console.log('error on POST /api/users/:id/posts', error);
+              res.status(500).json({ error: 'There was an error while saving the post to the database' })
+          })
+      
 });
-
 
 
 
@@ -83,7 +76,7 @@ router.get('/:id', validateUserId, (req, res) => {
       if(user) {
           res.status(200).json(user);
       } else {
-      res.status(404).json({ error: "id not returned" })
+      res.status(404).json({ error: "Requested ID does not exist" })
       }
     })
     .catch(error => {
@@ -108,7 +101,7 @@ router.get('/:id/posts', validateUserId, (req, res) => {
         if(user.length > 0) {
           res.status(200).json(user);
         } else {
-        res.status(404).json({ error: "id not returned" })
+        res.status(404).json({ error: "User with the requested ID does not exist" })
         }
     })
     .catch(error => {
@@ -130,7 +123,7 @@ router.delete('/:id',validateUserId, (req, res) => {
         if (count > 0) {
             res.status(200).json({ message: "The user has been deleted" })  
         } else {
-        res.status(404).json({ message: "user not found" });
+        res.status(404).json({ message: "User with the requested ID does not exist" });
         }
     })
     .catch(error => {
